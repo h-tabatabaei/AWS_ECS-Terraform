@@ -1,4 +1,4 @@
-# create Terraform code for impelemnting an ECS cluster with EC2 capacity provider
+# create Terraform code for impelmenting an ECS cluster with EC2 capacity provider
 
 This article will look at how to create a Terraform configuration to provide such resources:
 
