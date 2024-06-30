@@ -28,8 +28,8 @@ This article will look at how to create a Terraform configuration to provide suc
 curl $(terraform output --raw alb_url) # Hello from ip-10-10-10-XXX
 
 9 Bonus: ECS Service Auto Scaling
-# --- ECS Service Auto Scaling ---
-
+ ECS Service Auto Scaling
+```
 resource "aws_appautoscaling_target" "ecs_target" {
   service_namespace  = "ecs"
   scalable_dimension = "ecs:service:DesiredCount"
@@ -73,5 +73,5 @@ resource "aws_appautoscaling_policy" "ecs_target_memory" {
     scale_out_cooldown = 300
   }
 }
-
+```
 soruce: https://medium.com/@vladkens/aws-ecs-cluster-on-ec2-with-terraform-2023-fdb9f6b7db07
