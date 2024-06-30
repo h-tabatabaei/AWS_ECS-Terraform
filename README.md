@@ -3,32 +3,31 @@
 This article will look at how to create a Terraform configuration to provide such resources:
 
 ## VPC with public subnet
-1 Internet Gateway to connect to the global Internet
-2 Security groups for EC2 Node & ECS Service
-3 Auto-scaling group for ECS cluster with Launch Templates
-4 Publish image to ECR
-5 ECS cluster with task and service definition
-6 Load Balancer to public access & scale ECS Service
+1. Internet Gateway to connect to the global Internet
+2. Security groups for EC2 Node & ECS Service
+3. Auto-scaling group for ECS cluster with Launch Templates
+4. Publish image to ECR
+5. ECS cluster with task and service definition
+6. Load Balancer to public access & scale ECS Service
 
 ## the steps are:
-1 create vpc
-2 Creating a scalable ECS Cluster
-3 IAM Role & Security Group for ECS EC2 Node
-4 Launch Template
-5 Autoscaling Group
-6 Capacity Provider
-7 Creating ECS Service
-    1 Create Elastic Container Registry (ECR) & push image
-    2 Create IAM Role for ECS Task
-    3 Create ECS Task Definition
-    4 Create Security Group for service
-    5 Create ECS Service
-    6 Create Load Balancer
-8 Connect ECS Service to ALB
-curl $(terraform output --raw alb_url) # Hello from ip-10-10-10-XXX
+1. create vpc
+2. Creating a scalable ECS Cluster
+3. IAM Role & Security Group for ECS EC2 Node
+4. Launch Template
+5. Autoscaling Group
+6. Capacity Provider
+7. Creating ECS Service
+    1. Create Elastic Container Registry (ECR) & push image
+    2. Create IAM Role for ECS Task
+    3. Create ECS Task Definition
+    4. Create Security Group for service
+    5. Create ECS Service
+    6. Create Load Balancer
+8. Connect ECS Service to ALB
+`curl $(terraform output --raw alb_url) # Hello from ip-10-10-10-XXX`
 
-9 Bonus: ECS Service Auto Scaling
- ECS Service Auto Scaling
+9. Bonus: ECS Service Auto Scaling
 ```
 resource "aws_appautoscaling_target" "ecs_target" {
   service_namespace  = "ecs"
