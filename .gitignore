@@ -1,0 +1,11 @@
+# ignore git folder
+.git/
+
+# ignore terraform folder
+.terraform/
+
+# ignore terraform lock file
+.terraform.lock.hcl
+
+# ignore terraform related file
+terraform.*
