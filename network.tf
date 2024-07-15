@@ -8,7 +8,7 @@ locals {
 }
 
 resource "aws_vpc" "main" {
-  cidr_block           = "10.10.0.0/16"
+  cidr_block           = "10.2.0.0/16"
   enable_dns_hostnames = true
   enable_dns_support   = true
   tags                 = { Name = "demo-vpc" }
@@ -60,6 +60,54 @@ resource "aws_security_group" "ecs_node_sg" {
   name_prefix = "demo-ecs-node-sg-"
   vpc_id      = aws_vpc.main.id
 
+  ingress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# --- EFS SG ---
+
+resource "aws_security_group" "efs_sg" {
+  name_prefix = "demo-efs-sg-"
+  vpc_id      = aws_vpc.main.id
+  description = "efs security group"
+
+  ingress {
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# --- BASTION SG ---
+
+resource "aws_security_group" "bastion_sg" {
+  name_prefix = "demo-bastion-sg-"
+  vpc_id      = aws_vpc.main.id
+  description = "Bastion host security group"
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
   egress {
     from_port   = 0
     to_port     = 65535

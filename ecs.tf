@@ -52,7 +52,7 @@ resource "aws_ecs_task_definition" "app" {
   memory             = 256
 
   container_definitions = jsonencode([{
-    name         = "app",
+    name = "app",
     //image        = "${aws_ecr_repository.app.repository_url}:latest",
     image        = "nginxdemos/hello:latest",
     essential    = true,
@@ -73,6 +73,7 @@ resource "aws_ecs_task_definition" "app" {
     },
   }])
 }
+
 
 # --- ECS Service ---
 
@@ -130,4 +131,84 @@ resource "aws_ecs_service" "app" {
     container_port   = 80
   }
 }
+
+
 //The ordered_placement_strategy will try to make sure that each service instance is equally distributed across Availability Zones
+
+resource "aws_ecs_task_definition" "postgres" {
+  family             = "demo-postgres"
+  task_role_arn      = aws_iam_role.ecs_task_role.arn
+  execution_role_arn = aws_iam_role.ecs_exec_role.arn
+  network_mode       = "awsvpc"
+  cpu                = 512
+  memory             = 512
+
+  container_definitions = jsonencode([{
+    name         = "postgres",
+    image        = "bitnami/postgresql:14",
+    essential    = true,
+    portMappings = [{ containerPort = 5432, hostPort = 5432 }],
+
+    environment = [
+      { name = "POSTGRESQL_PASSWORD", value = "mydb@123" },
+      { name = "POSTGRESQL_DATABASE", value = "mydb" },
+      { name = "POSTGRESQL_USERNAME", value = "myuser" },
+      { name = "POSTGRESQL_POSTGRES_PASSWORD", value = "root@123" }
+    ]
+
+    logConfiguration = {
+      logDriver = "awslogs",
+      options = {
+        "awslogs-region"        = "eu-north-1",
+        "awslogs-group"         = aws_cloudwatch_log_group.ecs.name,
+        "awslogs-stream-prefix" = "postgres"
+      }
+    },
+  }])
+  volume {
+    name = "postgres"
+    efs_volume_configuration {
+      file_system_id = aws_efs_file_system.efs_db.id
+      authorization_config {
+        access_point_id = aws_efs_access_point.postgres_access_point.id
+      }
+      transit_encryption = "ENABLED"
+    }
+  }
+}
+
+
+resource "aws_ecs_service" "postgres" {
+  name            = "postgres"
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.postgres.arn
+  desired_count   = 1
+
+  network_configuration {
+    security_groups = [aws_security_group.ecs_task.id]
+    subnets         = aws_subnet.public[*].id
+  }
+
+  capacity_provider_strategy {
+    capacity_provider = aws_ecs_capacity_provider.main.name
+    base              = 1
+    weight            = 100
+  }
+
+  ordered_placement_strategy {
+    type  = "spread"
+    field = "attribute:ecs.availability-zone"
+  }
+
+  lifecycle {
+    ignore_changes = [desired_count]
+  }
+  # --- ECS Service --- connect ecs to alb
+  depends_on = [aws_lb_target_group.app]
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app.arn
+    container_name   = "postgres"
+    container_port   = 5432
+  }
+}
